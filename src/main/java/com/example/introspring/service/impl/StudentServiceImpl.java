@@ -1,6 +1,8 @@
 package com.example.introspring.service.impl;
 
+import com.example.introspring.dto.StudentDTO;
 import com.example.introspring.entity.Student;
+import com.example.introspring.mapper.StudentMapper;
 import com.example.introspring.repository.EnrollmentRepository;
 import com.example.introspring.repository.StudentRepository;
 import com.example.introspring.service.StudentService;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,36 +27,38 @@ public class StudentServiceImpl implements StudentService {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    StudentMapper studentMapper;
+
 
     @Override
-    public Student createStudent(Student student) {
-        studentRepository.save(student);
-        return student;
+    public StudentDTO createStudent(StudentDTO student) {
+        return studentMapper.toDTO(studentRepository.save(studentMapper.toEntity(student)));
     }
 
     @Override
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    public List<StudentDTO> getAllStudents() {
+        return studentRepository.findAll().stream().map(entity -> studentMapper.toDTO(entity)).toList();
     }
 
     @Override
-    public List<Student> getByProgram(String program) {
-        return studentRepository.findByProgram(program);
+    public List<StudentDTO> getByProgram(String program) {
+        return studentRepository.findByProgram(program).stream().map(entity -> studentMapper.toDTO(entity)).toList();
     }
 
     @Override
-    public Page<Student> findAll(int page){
-        Pageable pageable = PageRequest.of(page, pageSize);
-        return studentRepository.findAll(pageable);
+    public Page<StudentDTO> findAll(int page){
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("name").ascending());
+        return studentRepository.findAll(pageable).map(entity -> studentMapper.toDTO(entity));
     }
 
     @Override
-    public List<Student> listStudentsOfCourse(long courseId){
+    public List<StudentDTO> listStudentsOfCourse(long courseId){
         var enrollments = enrollmentRepository.findByCourse_Id(courseId);
         var students = enrollments.stream().map(enrollment -> {
             return enrollment.getStudent(); //enrollment::getCourse => esa es otra forma de hacerlo, mas simple
         }).toList();
-        return students;
+        return students.stream().map(entity -> studentMapper.toDTO(entity)).toList();
     }
 
     @Override
@@ -62,13 +67,30 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Student getStudentById(long id){
-        return studentRepository.findById(id).orElseThrow();
+    public StudentDTO getStudentById(long id){
+        return studentMapper.toDTO(studentRepository.findById(id).orElseThrow());
     }
 
     @Override
-    public Student getStudentByCode(String code){
-        return studentRepository.findByCode(code).orElseThrow();
+    public StudentDTO getStudentByCode(String code){
+        return studentMapper.toDTO(studentRepository.findByCode(code).orElseThrow());
+    }
+
+    @Override
+    public StudentDTO updateStudent(long studentId, StudentDTO student){
+        Student found = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if(student.getName() != null){
+            found.setName(student.getName());
+        }
+
+        if(student.getProgram() != null){
+            found.setProgram(student.getProgram());
+        }
+
+        return studentMapper.toDTO(studentRepository.save(found));
+
     }
 
 }

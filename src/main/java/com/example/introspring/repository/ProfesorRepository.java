@@ -10,4 +10,6 @@ public interface ProfesorRepository extends JpaRepository<Profesor, Long> {
 
     Optional<Profesor> findById(long id);
 
+    boolean existsById(long id);
+
 }

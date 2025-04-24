@@ -4,8 +4,10 @@ import com.example.introspring.entity.Course;
 import com.example.introspring.entity.User;
 import com.example.introspring.repository.UserRepository;
 import com.example.introspring.service.UserService;
+import jdk.jfr.Label;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +18,13 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
+    @Lazy
     private PasswordEncoder passwordEncoder;
 
     @Override
     public User findByEmail(String username) {
         return userRepository.findByEmail(username).orElseThrow();
     }
-
 
     @Override
     public void createUser(User user) {
