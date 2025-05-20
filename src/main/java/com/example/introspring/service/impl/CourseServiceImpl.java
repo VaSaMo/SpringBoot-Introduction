@@ -23,7 +23,7 @@ public class CourseServiceImpl implements CourseService {
 
     private int pageSize = 3;
 
-    @Autowired //autowirde: me permite inyectar la relacion
+    @Autowired //autowired: me permite inyectar la relacion
     private CourseRepository courseRepository;
 
     @Autowired
